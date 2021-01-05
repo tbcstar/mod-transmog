@@ -8,20 +8,20 @@
 #    SETTINGS
 #
 #    Transmogrification.EnableTransmogInfo
-#        Description: Enables / Disables the info button for transmogrification
+#        说明:启用/禁用幻化的信息按钮
 #        Default:    1
 #
 #    Transmogrification.TransmogNpcText
-#        Description: The npc_text entry of the info menu for transmogrification
+#        描述:幻化的信息菜单的npc_text条目
 #        Default:    601083
 #
 #    Transmogrification.Allowed
-#        Description: A list of item entries that are allowed for transmogrification (skips quality and CanUseItem check)
+#        描述:允许幻化的物品条目列表(跳过质量和CanUseItem检查)
 #                     Example: "25 35674 5623"
 #        Default:    ""
 #
 #    Transmogrification.NotAllowed
-#        Description: A list of item entries that are NOT allowed for transmogrification
+#        描述:不允许进行幻化的项目条目列表
 #                     Example: "25 35674 5623"
 #        Default:    ""
 
@@ -35,14 +35,14 @@ Transmogrification.NotAllowed = ""
 #    COPPER COST
 #
 #    Transmogrification.ScaledCostModifier
-#        Description: A multiplier for the default gold cost (change to 0 for no default cost)
+#        说明:默认货币成本的乘数(无默认成本时为0)
 #        Default:    1.0
 #
 #    Transmogrification.CopperCost
-#        Description: Cost added on top of other costs (can be negative)
+#        描述:在其他成本之上增加的成本(可以为负)
 #        Default:    0
 #
-#    For custom gold cost set ScaledCostModifier to 0.0 and CopperCost to what ever cost you want
+#    对于自定义黄金成本设置ScaledCostModifier为0.0和铜成本为任何你想要的成本
 
 Transmogrification.ScaledCostModifier = 1.0
 Transmogrification.CopperCost = 0
@@ -51,15 +51,15 @@ Transmogrification.CopperCost = 0
 #    TOKEN COST
 #
 #    Transmogrification.RequireToken
-#        Description: Adds/disables token cost
+#        说明:增加/禁用T币成本
 #        Default:    0
 #
 #    Transmogrification.TokenEntry
-#        Description: Entry of the token item
+#        描述:T币物品的条目
 #        Default:    49426
 #
 #    Transmogrification.TokenAmount
-#        Description: Amount of tokens required
+#        说明:所需T币数量
 #        Default:    1
 
 Transmogrification.RequireToken = 0
@@ -70,75 +70,75 @@ Transmogrification.TokenAmount = 1
 #    REQUIREMENTS
 #
 #    Transmogrification.AllowPoor
-#        Description: Allow poor quality items to be used as source and target items
+#        描述:允许灰色物品作为源物品和目标物品
 #        Default:    0
 #
 #    Transmogrification.AllowCommon
-#        Description: Allow common quality items to be used as source and target items
+#        描述:允许白色物品作为源和目标物品使用
 #        Default:    0
 #
 #    Transmogrification.AllowUncommon
-#        Description: Allow uncommon quality items to be used as source and target items
+#        描述:允许绿色物品作为来源和目标物品
 #        Default:    1
 #
 #    Transmogrification.AllowRare
-#        Description: Allow rare quality items to be used as source and target items
+#        描述:允许蓝色物品作为来源和目标物品
 #        Default:    1
 #
 #    Transmogrification.AllowEpic
-#        Description: Allow epic quality items to be used as source and target items
+#        描述:允许紫色物品作为源物品和目标物品使用
 #        Default:    1
 #
 #    Transmogrification.AllowLegendary
-#        Description: Allow legendary quality items to be used as source and target items
+#        描述:允许橙色物品作为来源和目标物品使用
 #        Default:    0
 #
 #    Transmogrification.AllowArtifact
-#        Description: Allow artifact quality items to be used as source and target items
+#        描述:允许金色物品被用作源物品和目标物品
 #        Default:    0
 #
 #    Transmogrification.AllowHeirloom
-#        Description: Allow heirloom quality items to be used as source and target items
+#        描述:允许传家宝物品被用作来源和目标物品
 #        Default:    1
 #
 #    Transmogrification.AllowMixedArmorTypes
-#        Description: Allow cloth items to be transmogrified with plate for example
+#        描述:例如，允许布甲物品用板甲幻化
 #        Default:    0
 #
 #    Transmogrification.AllowMixedWeaponTypes
-#        Description: Allow axe to be transmogrified with dagger for example
+#        举例来说，允许斧头被匕首幻化
 #        Default:    0
 #
 #    Transmogrification.AllowFishingPoles
-#        Description: Allow fishing poles to be transmogrified
+#        描述:允许鱼竿被幻化
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqRace
-#        Description: Ignore required race for source items
+#        说明:忽略源物品所需的种族
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqClass
-#        Description: Ignore required class for source items
+#        说明:忽略源物品所需的类型
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqSkill
-#        Description: Ignore required skill for source items
+#        说明:忽略源物品所需的技能
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqSpell
-#        Description: Ignore required spell for source items
+#        说明:忽略源物品所需的法术
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqLevel
-#        Description: Ignore required level for source items
+#        说明:忽略源物品所需级别
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqEvent
-#        Description: Ignore required event for source items
+#        说明:忽略源物品所需的事件
 #        Default:    0
 #
 #    Transmogrification.IgnoreReqStats
-#        Description: Ignore stat count > 0 requirement for source items
+#        描述:忽略统计计数> 0要求的源物品
 #        Default:    0
 
 Transmogrification.AllowPoor = 0
@@ -166,27 +166,27 @@ Transmogrification.IgnoreReqStats = 0
 #    SET FEATURE
 #
 #    Transmogrification.EnableSets
-#        Description: Enables / Disables the set feature. If you want permanent disable, check Transmogrification.h
+#        Description: 启用/禁用set特性。如果你想永久禁用，请检查 Transmogrification.h
 #        Default:    1
 #
 #    Transmogrification.MaxSets
-#        Description: Maximum amount of sets a player can save (hardcap at 25)
+#        Description: 玩家可以保存的最大数量 (hardcap at 25)
 #        Default:    10
 #
 #    Transmogrification.EnableSetInfo
-#        Description: Enables / Disables the info button for set fature
+#        Description: 启用/禁用set特性的info按钮
 #        Default:    1
 #
 #    Transmogrification.SetNpcText
-#        Description: The npc_text entry of the info menu for the set feature
+#        Description: set特性的info菜单的npc_text条目
 #        Default:    601084
 #
 #    Transmogrification.SetCostModifier
-#        Description: A multiplier for the default gold cost (all costs summed together) (change to 0 for no default cost)
+#        Description: 违约黄金成本的乘数(所有成本加在一起)(无违约成本变为0)
 #        Default:    3.0
 #
 #    Transmogrification.SetCopperCost
-#        Description: Cost added on top of other costs (can be negative)
+#        Description: 在其他成本之上增加的成本(可以是负数)
 #        Default:    0
 
 Transmogrification.EnableSets = 1
