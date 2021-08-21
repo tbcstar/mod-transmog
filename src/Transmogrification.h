@@ -1,13 +1,13 @@
 #ifndef DEF_TRANSMOGRIFICATION_H
 #define DEF_TRANSMOGRIFICATION_H
 
-#include <vector>
 #include "Player.h"
 #include "Config.h"
 #include "ScriptMgr.h"
 #include "ScriptedGossip.h"
 #include "GameEventMgr.h"
 #include <unordered_map>
+#include <vector>
 
 #define PRESETS // comment this line to disable preset feature totally
 #define MAX_OPTIONS 25 // do not alter
@@ -39,8 +39,11 @@ enum TransmogAcoreStrings // Language.h might have same entries, appears when ex
 class Transmogrification
 {
 public:
-    typedef unordered_map<uint64, uint64> transmogData;
-    typedef unordered_map<uint64, transmogData> transmogMap;
+    static Transmogrification* instance();
+
+    typedef std::unordered_map<ObjectGuid, ObjectGuid> transmogData;
+    typedef std::unordered_map<ObjectGuid, uint32> transmog2Data;
+    typedef std::unordered_map<ObjectGuid, transmog2Data> transmogMap;
     transmogMap entryMap; // entryMap[pGUID][iGUID] = entry
     transmogData dataMap; // dataMap[iGUID] = pGUID
 
@@ -50,10 +53,10 @@ public:
 
     typedef std::map<uint8, uint32> slotMap;
     typedef std::map<uint8, slotMap> presetData;
-    typedef unordered_map<uint64, presetData> presetDataMap;
+    typedef std::unordered_map<ObjectGuid, presetData> presetDataMap;
     presetDataMap presetById; // presetById[pGUID][presetID][slot] = entry
     typedef std::map<uint8, std::string> presetIdMap;
-    typedef unordered_map<uint64, presetIdMap> presetNameMap;
+    typedef std::unordered_map<ObjectGuid, presetIdMap> presetNameMap;
     presetNameMap presetByName; // presetByName[pGUID][presetID] = presetName
 
     void PresetTransmog(Player* player, Item* itemTransmogrified, uint32 fakeEntry, uint8 slot);
@@ -68,8 +71,8 @@ public:
     float GetSetCostModifier() const;
     int32 GetSetCopperCost() const;
 
-    void LoadPlayerSets(uint64 pGUID);
-    void UnloadPlayerSets(uint64 pGUID);
+    void LoadPlayerSets(ObjectGuid pGUID);
+    void UnloadPlayerSets(ObjectGuid pGUID);
 #endif
 
     bool EnableTransmogInfo;
@@ -120,19 +123,19 @@ public:
     const char * GetSlotName(uint8 slot, WorldSession* session) const;
     std::string GetItemLink(Item* item, WorldSession* session) const;
     std::string GetItemLink(uint32 entry, WorldSession* session) const;
-    uint32 GetFakeEntry(uint64 itemGUID) const;
+    uint32 GetFakeEntry(ObjectGuid itemGUID) const;
     void UpdateItem(Player* player, Item* item) const;
-    void DeleteFakeEntry(Player* player, uint8 slot, Item* itemTransmogrified, SQLTransaction* trans = NULL);
+    void DeleteFakeEntry(Player* player, uint8 slot, Item* itemTransmogrified, CharacterDatabaseTransaction* trans = nullptr);
     void SetFakeEntry(Player* player, uint32 newEntry, uint8 slot, Item* itemTransmogrified);
 
-    TransmogAcoreStrings Transmogrify(Player* player, uint64 itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
+    TransmogAcoreStrings Transmogrify(Player* player, ObjectGuid itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
     bool CanTransmogrifyItemWithItem(Player* player, ItemTemplate const* destination, ItemTemplate const* source) const;
     bool SuitableForTransmogrification(Player* player, ItemTemplate const* proto) const;
     // bool CanBeTransmogrified(Item const* item);
     // bool CanTransmogrify(Item const* item);
     uint32 GetSpecialPrice(ItemTemplate const* proto) const;
 
-    void DeleteFakeFromDB(uint64 itemGUID, SQLTransaction* trans = NULL);
+    void DeleteFakeFromDB(ObjectGuid::LowType itemLowGuid, CharacterDatabaseTransaction* trans = nullptr);
     float GetScaledCostModifier() const;
     int32 GetCopperCost() const;
 
@@ -149,6 +152,6 @@ public:
     bool GetEnableSetInfo() const;
     uint32 GetSetNpcText() const;
 };
-#define sTransmogrification ACE_Singleton<Transmogrification, ACE_Null_Mutex>::instance()
+#define sTransmogrification Transmogrification::instance()
 
 #endif

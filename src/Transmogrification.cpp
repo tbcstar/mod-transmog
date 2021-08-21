@@ -1,9 +1,15 @@
 #include "Transmogrification.h"
 
+Transmogrification* Transmogrification::instance()
+{
+    static Transmogrification instance;
+    return &instance;
+}
+
 #ifdef PRESETS
 void Transmogrification::PresetTransmog(Player* player, Item* itemTransmogrified, uint32 fakeEntry, uint8 slot)
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::PresetTransmog");
+    LOG_DEBUG("modules", "Transmogrification::PresetTransmog");
 
     if (!EnableSets)
         return;
@@ -28,9 +34,9 @@ void Transmogrification::PresetTransmog(Player* player, Item* itemTransmogrified
     itemTransmogrified->ClearSoulboundTradeable(player);
 }
 
-void Transmogrification::LoadPlayerSets(uint64 pGUID)
+void Transmogrification::LoadPlayerSets(ObjectGuid pGUID)
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::LoadPlayerSets");
+    LOG_DEBUG("modules", "Transmogrification::LoadPlayerSets");
 
     for (presetData::iterator it = presetById[pGUID].begin(); it != presetById[pGUID].end(); ++it)
         it->second.clear();
@@ -39,7 +45,7 @@ void Transmogrification::LoadPlayerSets(uint64 pGUID)
 
     presetByName[pGUID].clear();
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT `PresetID`, `SetName`, `SetData` FROM `custom_transmogrification_sets` WHERE Owner = %u", GUID_LOPART(pGUID));
+    QueryResult result = CharacterDatabase.PQuery("SELECT `PresetID`, `SetName`, `SetData` FROM `custom_transmogrification_sets` WHERE Owner = %u", pGUID.GetCounter());
     if (result)
     {
         do
@@ -56,7 +62,7 @@ void Transmogrification::LoadPlayerSets(uint64 pGUID)
                     break;
                 if (slot >= EQUIPMENT_SLOT_END)
                 {
-                    sLog->outError("物品entry (假的entry: %u, 玩家GUID: %u, 位置: %u, 预设Id: %u) 有无效的插槽，忽略。", entry, GUID_LOPART(pGUID), slot, uint32(PresetID));
+                    sLog->outError("物品条目 (假的Entry: %u, 玩家: %s, 位置: %u, 预设Id: %u) 有无效的插槽，忽略。", entry, pGUID.ToString().c_str(), slot, uint32(PresetID));
                     continue;
                 }
                 if (sObjectMgr->GetItemTemplate(entry))
@@ -75,7 +81,7 @@ void Transmogrification::LoadPlayerSets(uint64 pGUID)
             else // should be deleted on startup, so  this never runs (shouldnt..)
             {
                 presetById[pGUID].erase(PresetID);
-                CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", GUID_LOPART(pGUID), PresetID);
+                CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", pGUID.GetCounter(), PresetID);
             }
         } while (result->NextRow());
     }
@@ -98,7 +104,7 @@ int32 Transmogrification::GetSetCopperCost() const
     return SetCopperCost;
 }
 
-void Transmogrification::UnloadPlayerSets(uint64 pGUID)
+void Transmogrification::UnloadPlayerSets(ObjectGuid pGUID)
 {
     for (presetData::iterator it = presetById[pGUID].begin(); it != presetById[pGUID].end(); ++it)
         it->second.clear();
@@ -110,7 +116,7 @@ void Transmogrification::UnloadPlayerSets(uint64 pGUID)
 
 const char* Transmogrification::GetSlotName(uint8 slot, WorldSession* /*session*/) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetSlotName");
+    LOG_DEBUG("modules", "Transmogrification::GetSlotName");
 
     switch (slot)
     {
@@ -134,7 +140,7 @@ const char* Transmogrification::GetSlotName(uint8 slot, WorldSession* /*session*
 
 std::string Transmogrification::GetItemIcon(uint32 entry, uint32 width, uint32 height, int x, int y) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetItemIcon");
+    LOG_DEBUG("modules", "Transmogrification::GetItemIcon");
 
     std::ostringstream ss;
     ss << "|TInterface";
@@ -154,7 +160,7 @@ std::string Transmogrification::GetItemIcon(uint32 entry, uint32 width, uint32 h
 
 std::string Transmogrification::GetSlotIcon(uint8 slot, uint32 width, uint32 height, int x, int y) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetSlotIcon");
+    LOG_DEBUG("modules", "Transmogrification::GetSlotIcon");
 
     std::ostringstream ss;
     ss << "|TInterface/PaperDoll/";
@@ -182,7 +188,7 @@ std::string Transmogrification::GetSlotIcon(uint8 slot, uint32 width, uint32 hei
 
 std::string Transmogrification::GetItemLink(Item* item, WorldSession* session) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetItemLink");
+    LOG_DEBUG("modules", "Transmogrification::GetItemLink");
 
     int loc_idx = session->GetSessionDbLocaleIndex();
     const ItemTemplate* temp = item->GetTemplate();
@@ -232,7 +238,7 @@ std::string Transmogrification::GetItemLink(Item* item, WorldSession* session) c
 
 std::string Transmogrification::GetItemLink(uint32 entry, WorldSession* session) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetItemLink");
+    LOG_DEBUG("modules", "Transmogrification::GetItemLink");
 
     const ItemTemplate* temp = sObjectMgr->GetItemTemplate(entry);
     int loc_idx = session->GetSessionDbLocaleIndex();
@@ -247,22 +253,22 @@ std::string Transmogrification::GetItemLink(uint32 entry, WorldSession* session)
     return oss.str();
 }
 
-uint32 Transmogrification::GetFakeEntry(uint64 itemGUID) const
+uint32 Transmogrification::GetFakeEntry(ObjectGuid itemGUID) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::GetFakeEntry");
+    LOG_DEBUG("modules", "Transmogrification::GetFakeEntry");
 
     transmogData::const_iterator itr = dataMap.find(itemGUID);
     if (itr == dataMap.end()) return 0;
     transmogMap::const_iterator itr2 = entryMap.find(itr->second);
     if (itr2 == entryMap.end()) return 0;
-    transmogData::const_iterator itr3 = itr2->second.find(itemGUID);
+    transmog2Data::const_iterator itr3 = itr2->second.find(itemGUID);
     if (itr3 == itr2->second.end()) return 0;
     return itr3->second;
 }
 
 void Transmogrification::UpdateItem(Player* player, Item* item) const
 {
-    sLog->outDebug(LOG_FILTER_MODULES, "Transmogrification::UpdateItem");
+    LOG_DEBUG("modules", "Transmogrification::UpdateItem");
 
     if (item->IsEquipped())
     {
@@ -272,24 +278,24 @@ void Transmogrification::UpdateItem(Player* player, Item* item) const
     }
 }
 
-void Transmogrification::DeleteFakeEntry(Player* player, uint8 /*slot*/, Item* itemTransmogrified, SQLTransaction* trans)
+void Transmogrification::DeleteFakeEntry(Player* player, uint8 /*slot*/, Item* itemTransmogrified, CharacterDatabaseTransaction* trans /*= nullptr*/)
 {
     //if (!GetFakeEntry(item))
     //    return false;
-    DeleteFakeFromDB(itemTransmogrified->GetGUID(), trans);
+    DeleteFakeFromDB(itemTransmogrified->GetGUID().GetCounter(), trans);
     UpdateItem(player, itemTransmogrified);
 }
 
 void Transmogrification::SetFakeEntry(Player* player, uint32 newEntry, uint8 /*slot*/, Item* itemTransmogrified)
 {
-    uint64 itemGUID = itemTransmogrified->GetGUID();
+    ObjectGuid itemGUID = itemTransmogrified->GetGUID();
     entryMap[player->GetGUID()][itemGUID] = newEntry;
     dataMap[itemGUID] = player->GetGUID();
-    CharacterDatabase.PExecute("REPLACE INTO custom_transmogrification (GUID, FakeEntry, Owner) VALUES (%u, %u, %u)", GUID_LOPART(itemGUID), newEntry, player->GetGUIDLow());
+    CharacterDatabase.PExecute("REPLACE INTO custom_transmogrification (GUID, FakeEntry, Owner) VALUES (%u, %u, %u)", itemGUID.GetCounter(), newEntry, player->GetGUID().GetCounter());
     UpdateItem(player, itemTransmogrified);
 }
 
-TransmogAcoreStrings Transmogrification::Transmogrify(Player* player, uint64 itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost)
+TransmogAcoreStrings Transmogrification::Transmogrify(Player* player, ObjectGuid itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost)
 {
     int32 cost = 0;
     // slot of the transmogrified item
@@ -349,7 +355,8 @@ TransmogAcoreStrings Transmogrification::Transmogrify(Player* player, uint64 ite
             if (cost) // 0 cost if reverting look
             {
                 if (cost < 0)
-                    sLog->outDebug(LOG_FILTER_MODULES,  "Transmogrification::Transmogrify - %s (%u) transmogrification invalid cost (non negative, amount %i). Transmogrified %u with %u", player->GetName().c_str(), player->GetGUIDLow(), -cost, itemTransmogrified->GetEntry(), itemTransmogrifier->GetEntry());
+                    LOG_DEBUG("modules", "Transmogrification::Transmogrify - %s (%s) transmogrification invalid cost (non negative, amount %i). Transmogrified %u with %u",
+                        player->GetName().c_str(), player->GetGUID().ToString().c_str(), -cost, itemTransmogrified->GetEntry(), itemTransmogrifier->GetEntry());
                 else
                 {
                     if (!player->HasEnoughMoney(cost))
@@ -667,8 +674,10 @@ void Transmogrification::LoadConfig(bool reload)
     }
 }
 
-void Transmogrification::DeleteFakeFromDB(uint64 itemGUID, SQLTransaction* trans)
+void Transmogrification::DeleteFakeFromDB(ObjectGuid::LowType itemLowGuid, CharacterDatabaseTransaction* trans /*= nullptr*/)
 {
+    ObjectGuid itemGUID = ObjectGuid::Create<HighGuid::Item>(itemLowGuid);
+
     if (dataMap.find(itemGUID) != dataMap.end())
     {
         if (entryMap.find(dataMap[itemGUID]) != entryMap.end())
@@ -676,9 +685,9 @@ void Transmogrification::DeleteFakeFromDB(uint64 itemGUID, SQLTransaction* trans
         dataMap.erase(itemGUID);
     }
     if (trans)
-        (*trans)->PAppend("DELETE FROM custom_transmogrification WHERE GUID = %u", GUID_LOPART(itemGUID));
+        (*trans)->PAppend("DELETE FROM custom_transmogrification WHERE GUID = %u", itemLowGuid);
     else
-        CharacterDatabase.PExecute("DELETE FROM custom_transmogrification WHERE GUID = %u", GUID_LOPART(itemGUID));
+        CharacterDatabase.PExecute("DELETE FROM custom_transmogrification WHERE GUID = %u", itemGUID.GetCounter());
 }
 
 bool Transmogrification::GetEnableTransmogInfo() const

@@ -69,7 +69,7 @@ public:
             case EQUIPMENT_SLOT_END + 2: // Remove Transmogrifications
             {
                 bool removed = false;
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                auto trans = CharacterDatabase.BeginTransaction();
                 for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
                 {
                     if (Item* newItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
@@ -160,7 +160,7 @@ public:
                     return true;
                 }
                 // action = presetID
-                CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", player->GetGUIDLow(), action);
+                CharacterDatabase.PExecute("DELETE FROM `custom_transmogrification_sets` WHERE Owner = %u AND PresetID = %u", player->GetGUID().GetCounter(), action);
                 sT->presetById[player->GetGUID()][action].clear();
                 sT->presetById[player->GetGUID()].erase(action);
                 sT->presetByName[player->GetGUID()].erase(action);
@@ -220,7 +220,7 @@ public:
                     return true;
                 }
                 // sender = slot, action = display
-                TransmogAcoreStrings res = sT->Transmogrify(player, MAKE_NEW_GUID(action, 0, HIGHGUID_ITEM), sender);
+                TransmogAcoreStrings res = sT->Transmogrify(player, ObjectGuid::Create<HighGuid::Item>(action), sender);
                 if (res == LANG_ERR_TRANSMOG_OK)
                     session->SendAreaTriggerMessage("%s",GTS(LANG_ERR_TRANSMOG_OK));
                 else
@@ -291,7 +291,7 @@ public:
                     sT->presetById[player->GetGUID()][presetID][it->first] = it->second;
                 }
                 sT->presetByName[player->GetGUID()][presetID] = name; // Make sure code doesnt mess up SQL!
-                CharacterDatabase.PExecute("REPLACE INTO `custom_transmogrification_sets` (`Owner`, `PresetID`, `SetName`, `SetData`) VALUES (%u, %u, \"%s\", \"%s\")", player->GetGUIDLow(), uint32(presetID), name.c_str(), ss.str().c_str());
+                CharacterDatabase.PExecute("REPLACE INTO `custom_transmogrification_sets` (`Owner`, `PresetID`, `SetName`, `SetData`) VALUES (%u, %u, \"%s\", \"%s\")", player->GetGUID().GetCounter(), uint32(presetID), name.c_str(), ss.str().c_str());
                 if (cost)
                     player->ModifyMoney(-cost);
                 break;
@@ -330,7 +330,7 @@ public:
                 if (sT->GetFakeEntry(oldItem->GetGUID()) == newItem->GetEntry())
                     continue;
                 ++limit;
-                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, sT->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sT->GetItemLink(newItem, session), slot, newItem->GetGUIDLow(), "使用这件物品用于外观幻化，会导致这件物品和你绑定而且无法交易\n你确定要继续吗？\n\n" + sT->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sT->GetItemLink(newItem, session) + ss.str(), price, false);
+                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, sT->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sT->GetItemLink(newItem, session), slot, newItem->GetGUID().GetCounter(), "使用这件物品用于外观幻化，会导致这件物品和你绑定而且无法交易\n你确定要继续吗？\n\n" + sT->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sT->GetItemLink(newItem, session) + ss.str(), price, false);
             }
 
             for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
@@ -350,7 +350,7 @@ public:
                     if (sT->GetFakeEntry(oldItem->GetGUID()) == newItem->GetEntry())
                         continue;
                     ++limit;
-                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, sT->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sT->GetItemLink(newItem, session), slot, newItem->GetGUIDLow(), "使用这件物品用于外观幻化，会导致这件物品和你绑定而且无法交易\n你确定要继续吗？\n\n" + sT->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sT->GetItemLink(newItem, session) + ss.str(), price, false);
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, sT->GetItemIcon(newItem->GetEntry(), 30, 30, -18, 0) + sT->GetItemLink(newItem, session), slot, newItem->GetGUID().GetCounter(), "使用这件物品用于外观幻化，会导致这件物品和你绑定而且无法交易\n你确定要继续吗？\n\n" + sT->GetItemIcon(newItem->GetEntry(), 40, 40, -15, -10) + sT->GetItemLink(newItem, session) + ss.str(), price, false);
                 }
             }
         }
@@ -367,7 +367,8 @@ class PS_Transmogrification : public PlayerScript
 public:
     PS_Transmogrification() : PlayerScript("Player_Transmogrify") { }
 
-    void OnAfterSetVisibleItemSlot(Player* player, uint8 slot, Item *item) {
+    void OnAfterSetVisibleItemSlot(Player* player, uint8 slot, Item *item)
+    {
         if (!item)
             return;
 
@@ -375,20 +376,21 @@ public:
             player->SetUInt32Value(PLAYER_VISIBLE_ITEM_1_ENTRYID + (slot * 2), entry);
     }
 
-    void OnAfterMoveItemFromInventory(Player* /*player*/, Item* it, uint8 /*bag*/, uint8 /*slot*/, bool /*update*/) {
-        sT->DeleteFakeFromDB(it->GetGUIDLow());
+    void OnAfterMoveItemFromInventory(Player* /*player*/, Item* it, uint8 /*bag*/, uint8 /*slot*/, bool /*update*/)
+    {
+        sT->DeleteFakeFromDB(it->GetGUID().GetCounter());
     }
-    
+
     void OnLogin(Player* player)
     {
-        uint64 playerGUID = player->GetGUID();
+        ObjectGuid playerGUID = player->GetGUID();
         sT->entryMap.erase(playerGUID);
-        QueryResult result = CharacterDatabase.PQuery("SELECT GUID, FakeEntry FROM custom_transmogrification WHERE Owner = %u", player->GetGUIDLow());
+        QueryResult result = CharacterDatabase.PQuery("SELECT GUID, FakeEntry FROM custom_transmogrification WHERE Owner = %u", player->GetGUID().GetCounter());
         if (result)
         {
             do
             {
-                uint64 itemGUID = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_ITEM);
+                ObjectGuid itemGUID = ObjectGuid::Create<HighGuid::Item>((*result)[0].GetUInt32());
                 uint32 fakeEntry = (*result)[1].GetUInt32();
                 if (sObjectMgr->GetItemTemplate(fakeEntry))
                 {
@@ -417,8 +419,8 @@ public:
 
     void OnLogout(Player* player)
     {
-        uint64 pGUID = player->GetGUID();
-        for (Transmogrification::transmogData::const_iterator it = sT->entryMap[pGUID].begin(); it != sT->entryMap[pGUID].end(); ++it)
+        ObjectGuid pGUID = player->GetGUID();
+        for (Transmogrification::transmog2Data::const_iterator it = sT->entryMap[pGUID].begin(); it != sT->entryMap[pGUID].end(); ++it)
             sT->dataMap.erase(it->first);
         sT->entryMap.erase(pGUID);
 
@@ -453,21 +455,25 @@ public:
     }
 };
 
-class global_transmog_script : public GlobalScript {
-    public:
-        global_transmog_script() : GlobalScript("global_transmog_script") { }
-        
-        void OnItemDelFromDB(SQLTransaction& trans, uint32 itemGuid) {
-            sT->DeleteFakeFromDB(itemGuid, &trans);
-        }
-        
-        void OnMirrorImageDisplayItem(const Item *item, uint32 &display) {
-            if (uint32 entry = sTransmogrification->GetFakeEntry(item->GetGUID()))
-                display=uint32(sObjectMgr->GetItemTemplate(entry)->DisplayInfoID);
-        }
+class global_transmog_script : public GlobalScript
+{
+public:
+    global_transmog_script() : GlobalScript("global_transmog_script") { }
+
+    void OnItemDelFromDB(CharacterDatabaseTransaction trans, ObjectGuid::LowType itemGuid)
+    {
+        sT->DeleteFakeFromDB(itemGuid, &trans);
+    }
+
+    void OnMirrorImageDisplayItem(const Item *item, uint32 &display)
+    {
+        if (uint32 entry = sTransmogrification->GetFakeEntry(item->GetGUID()))
+            display=uint32(sObjectMgr->GetItemTemplate(entry)->DisplayInfoID);
+    }
 };
 
-void AddSC_transmog() {
+void AddSC_Transmog()
+{
     new global_transmog_script();
     new npc_transmogrifier();
     new PS_Transmogrification();
