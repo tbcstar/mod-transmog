@@ -6,6 +6,12 @@
 #include "ScriptMgr.h"
 #include "ScriptedGossip.h"
 #include "GameEventMgr.h"
+#include "Item.h"
+#include "ScriptMgr.h"
+#include "Chat.h"
+#include "ItemTemplate.h"
+#include "QuestDef.h"
+#include "ItemTemplate.h"
 #include <unordered_map>
 #include <vector>
 
@@ -16,6 +22,11 @@ class Item;
 class Player;
 class WorldSession;
 struct ItemTemplate;
+
+enum TransmogSettings
+{
+    SETTING_HIDE_TRANSMOG = 0,
+};
 
 enum TransmogAcoreStrings // Language.h might have same entries, appears when executing SQL, change if needed
 {
@@ -34,6 +45,8 @@ enum TransmogAcoreStrings // Language.h might have same entries, appears when ex
 #ifdef PRESETS
     LANG_PRESET_ERR_INVALID_NAME,
 #endif
+    LANG_CMD_TRANSMOG_SHOW = 11111,
+    LANG_CMD_TRANSMOG_HIDE = 11112,
 };
 
 class Transmogrification
@@ -44,8 +57,10 @@ public:
     typedef std::unordered_map<ObjectGuid, ObjectGuid> transmogData;
     typedef std::unordered_map<ObjectGuid, uint32> transmog2Data;
     typedef std::unordered_map<ObjectGuid, transmog2Data> transmogMap;
+    typedef std::unordered_map<uint32, std::vector<uint32>> collectionCacheMap;
     transmogMap entryMap; // entryMap[pGUID][iGUID] = entry
     transmogData dataMap; // dataMap[iGUID] = pGUID
+    collectionCacheMap collectionCache;
 
 #ifdef PRESETS
     bool EnableSetInfo;
@@ -111,6 +126,11 @@ public:
     bool IgnoreReqEvent;
     bool IgnoreReqStats;
 
+    bool UseCollectionSystem;
+    bool TrackUnusableItems;
+
+    bool IsTransmogEnabled;
+
     bool IsAllowed(uint32 entry) const;
     bool IsNotAllowed(uint32 entry) const;
     bool IsAllowedQuality(uint32 quality) const;
@@ -127,8 +147,11 @@ public:
     void UpdateItem(Player* player, Item* item) const;
     void DeleteFakeEntry(Player* player, uint8 slot, Item* itemTransmogrified, CharacterDatabaseTransaction* trans = nullptr);
     void SetFakeEntry(Player* player, uint32 newEntry, uint8 slot, Item* itemTransmogrified);
+    bool AddCollectedAppearance(uint32 accountId, uint32 itemId);
 
     TransmogAcoreStrings Transmogrify(Player* player, ObjectGuid itemGUID, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
+    TransmogAcoreStrings Transmogrify(Player* player, uint32 itemEntry, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
+    TransmogAcoreStrings Transmogrify(Player* player, Item* itemTransmogrifier, uint8 slot, /*uint32 newEntry, */bool no_cost = false);
     bool CanTransmogrifyItemWithItem(Player* player, ItemTemplate const* destination, ItemTemplate const* source) const;
     bool SuitableForTransmogrification(Player* player, ItemTemplate const* proto) const;
     // bool CanBeTransmogrified(Item const* item);
@@ -151,6 +174,10 @@ public:
     uint32 GetTransmogNpcText() const;
     bool GetEnableSetInfo() const;
     uint32 GetSetNpcText() const;
+
+    bool GetUseCollectionSystem() const;
+    bool GetTrackUnusableItems() const;
+    [[nodiscard]] bool IsEnabled() const;
 };
 #define sTransmogrification Transmogrification::instance()
 
