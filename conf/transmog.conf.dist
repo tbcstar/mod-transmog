@@ -2,25 +2,25 @@
 
 
 ###################################################################################################
-#    Transmogrification config
+#    幻化配置
 ###################################################################################################
 #
-#    SETTINGS
+#    SETTINGS-设置
 #
 #    Transmogrification.Enable
-#        Description: Enables/Disables transmog.
-#                     Players won't be able to see any transmogrified item while disabled, however, database data remains intact.
+#        Description: 启用/禁用幻化
+#                     禁用时，玩家将无法看到任何幻化的物品，但数据库数据仍然完整。
 #        Default:     1
 #
 #    Transmogrification.UseCollectionSystem
-#        Description: Enables/Disables Legion-style appearance collection system.
-#                     If enabled, players can use the appearance of any item equipped or rewarded from a completed quest.
-#                     If disabled, players must have an item in their bags to use as a transmogrification appearance source.
+#        Description: 启用/禁用军团风格的外观收集系统。
+#                     如果启用，玩家可以使用任何装备或完成任务的奖励物品的外观。
+#                     如果被禁用，玩家必须在他们的包里有一个物品来用作幻化的外观来源。
 #        Default:     1
 #
 #    Transmogrification.TrackUnusableItems
-#        Description: If enabled, appearances are collected even for items that are not suitable for transmogrification.
-#                     This allows these appearances to be used later if the configuration is changed.
+#        Description: 如果启用，即使不适合幻化的物品也会收集外观。
+#                     这允许在配置更改后使用这些外观。
 #        Default:     1
 #
 #    Transmogrification.EnableTransmogInfo
